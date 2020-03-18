@@ -34,10 +34,11 @@ import java.util.List;
 import jxl.Cell;
 
 public class ChoiceExcelActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener , ExcelCallback {
+        implements NavigationView.OnNavigationItemSelectedListener, ExcelCallback {
     private SmartTable<Cell> table;
     private RecyclerView recyclerView;
     private IExcel2Table<Cell> iExcel2Table;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,40 +54,39 @@ public class ChoiceExcelActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        FontStyle.setDefaultTextSize(DensityUtils.sp2px(this,15));
+        FontStyle.setDefaultTextSize(DensityUtils.sp2px(this, 15));
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         table = (SmartTable<Cell>) findViewById(R.id.table);
         iExcel2Table = new JXLExcel2Table();
-        iExcel2Table.initTableConfig(this,table);
+        iExcel2Table.initTableConfig(this, table);
         iExcel2Table.setCallback(this);
         iExcel2Table.loadSheetList(this, "c.xls");
     }
 
     @Override
     protected void onDestroy() {
-        if(iExcel2Table !=null){
+        if (iExcel2Table != null) {
             iExcel2Table.clear();
         }
         iExcel2Table = null;
         super.onDestroy();
     }
 
-
     @Override
     public void getSheetListSuc(List<String> sheetNames) {
         recyclerView.setHasFixedSize(true);
-        if(sheetNames!=null && sheetNames.size() >0) {
+        if (sheetNames != null && sheetNames.size() > 0) {
             final SheetAdapter sheetAdapter = new SheetAdapter(sheetNames);
             sheetAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                     sheetAdapter.setSelectPosition(position);
-                    iExcel2Table.loadSheetContent(ChoiceExcelActivity.this,position);
+                    iExcel2Table.loadSheetContent(ChoiceExcelActivity.this, position);
                 }
             });
             recyclerView.setAdapter(sheetAdapter);
-            iExcel2Table.loadSheetContent(ChoiceExcelActivity.this,0);
+            iExcel2Table.loadSheetContent(ChoiceExcelActivity.this, 0);
         }
     }
 
@@ -100,9 +100,6 @@ public class ChoiceExcelActivity extends AppCompatActivity
         }
     }
 
-
-
-
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
@@ -112,12 +109,11 @@ public class ChoiceExcelActivity extends AppCompatActivity
         if (id == R.id.nav_import) {
             Intent intent4 = new Intent(this, NormalFilePickActivity.class);
             intent4.putExtra(Constant.MAX_NUMBER, 1);
-            intent4.putExtra(NormalFilePickActivity.SUFFIX, new String[] {"xls"});
+            intent4.putExtra(NormalFilePickActivity.SUFFIX, new String[]{"xls"});
             startActivityForResult(intent4, Constant.REQUEST_CODE_PICK_FILE);
         } else if (id == R.id.nav_export) {
 
         }
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -130,9 +126,9 @@ public class ChoiceExcelActivity extends AppCompatActivity
             case Constant.REQUEST_CODE_PICK_FILE:
                 if (resultCode == RESULT_OK) {
                     ArrayList<NormalFile> list = data.getParcelableArrayListExtra(Constant.RESULT_PICK_FILE);
-                    if(list !=null && list.size()>0){
+                    if (list != null && list.size() > 0) {
                         iExcel2Table.setIsAssetsFile(false);
-                        iExcel2Table.loadSheetList(this,list.get(0).getPath());
+                        iExcel2Table.loadSheetList(this, list.get(0).getPath());
                     }
                 }
                 break;

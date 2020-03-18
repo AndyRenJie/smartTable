@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/RSmartTable.iml" filepath="$PROJECT_DIR$/RSmartTable.iml" group="RSmartTable" />
+      <module fileurl="file://$PROJECT_DIR$/app/RSmartTable-app.iml" filepath="$PROJECT_DIR$/app/RSmartTable-app.iml" group="RSmartTable/app" />
+      <module fileurl="file://$PROJECT_DIR$/form/RSmartTable-form.iml" filepath="$PROJECT_DIR$/form/RSmartTable-form.iml" group="RSmartTable/form" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/form/form.iml" filepath="$PROJECT_DIR$/form/form.iml" />
       <module fileurl="file://$PROJECT_DIR$/smartTable.iml" filepath="$PROJECT_DIR$/smartTable.iml" />
