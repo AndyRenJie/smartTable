@@ -37,26 +37,19 @@ public class POIExcelModeActivity extends AppCompatActivity implements ExcelCall
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_excel_table);
-        FontStyle.setDefaultTextSize(DensityUtils.sp2px(this,15));
+        FontStyle.setDefaultTextSize(DensityUtils.sp2px(this, 15));
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
+        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         table = (SmartTable<Cell>) findViewById(R.id.table);
         iExcel2Table = new POIExcel2Table();
-        iExcel2Table.initTableConfig(this,table);
+        iExcel2Table.initTableConfig(this, table);
         iExcel2Table.setCallback(this);
-        iExcel2Table.loadSheetList(this,fileName);
-
-
-
-
+        iExcel2Table.loadSheetList(this, fileName);
     }
-
-
-
 
     @Override
     protected void onDestroy() {
-        if(iExcel2Table !=null){
+        if (iExcel2Table != null) {
             iExcel2Table.clear();
         }
         iExcel2Table = null;
@@ -66,18 +59,22 @@ public class POIExcelModeActivity extends AppCompatActivity implements ExcelCall
     @Override
     public void getSheetListSuc(List<String> sheetNames) {
         recyclerView.setHasFixedSize(true);
-        if(sheetNames!=null && sheetNames.size() >0) {
+        if (sheetNames != null && sheetNames.size() > 0) {
             final SheetAdapter sheetAdapter = new SheetAdapter(sheetNames);
             sheetAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
                 @Override
                 public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
                     sheetAdapter.setSelectPosition(position);
-                    iExcel2Table.loadSheetContent(POIExcelModeActivity.this,position);
+                    iExcel2Table.loadSheetContent(POIExcelModeActivity.this, position, POIExcelModeActivity.this);
                 }
             });
             recyclerView.setAdapter(sheetAdapter);
-            iExcel2Table.loadSheetContent(POIExcelModeActivity.this,0);
+            iExcel2Table.loadSheetContent(this, 0, this);
         }
     }
 
+    @Override
+    public void getSheelContentSuc() {
+
+    }
 }

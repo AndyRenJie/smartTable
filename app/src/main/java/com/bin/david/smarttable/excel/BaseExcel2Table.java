@@ -35,14 +35,11 @@ import java.util.List;
 
 import jxl.Cell;
 
-
 /**
  * Created by huang on 2018/1/23.
  * 通用Excel导入表格
  */
-
 public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
-
     private ExcelCallback callback;
     private SheetAsyncTask sheetAsyncTask;
     private ExcelAsyncTask<T> excelAsyncTask;
@@ -127,7 +124,6 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
         this.ranges = new ArrayList<>();
     }
 
-
     protected String getFileName() {
         return fileName;
     }
@@ -145,8 +141,8 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
     }
 
     @Override
-    public void loadSheetContent(Context context, int position) {
-        excelAsyncTask = new ExcelAsyncTask<>(context);
+    public void loadSheetContent(Context context, int position, ExcelCallback excelCallback) {
+        excelAsyncTask = new ExcelAsyncTask<>(context, excelCallback);
         excelAsyncTask.execute(position);
     }
 
@@ -228,13 +224,13 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
      */
     public InputStream getInputStream(Context context, String fileName) throws IOException {
         InputStream is;
-        if (isAssetsFile)
+        if (isAssetsFile) {
             is = context.getAssets().open(fileName);
-        else
+        } else {
             is = new FileInputStream(fileName);
+        }
         return is;
     }
-
 
     @Override
     public void setIsAssetsFile(boolean isAssetsFile) {
@@ -244,9 +240,11 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
     public class ExcelAsyncTask<K> extends AsyncTask<Integer, Void, K[][]> {
 
         WeakReference<Context> softReference;
+        ExcelCallback excelCallback;
 
-        public ExcelAsyncTask(Context context) {
+        public ExcelAsyncTask(Context context, ExcelCallback callback) {
             softReference = new WeakReference<>(context);
+            excelCallback = callback;
         }
 
         @Override
@@ -323,11 +321,8 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
                             int fontSize = (int) (getFontSize(softReference.get(), (T) cellInfo.data) * fontScale); //增加字体，效果更好看
                             config.getPaint().setTextSize(DensityUtils.sp2px(softReference.get(), fontSize) * config.getZoom());
                             paint.setColor(getTextColor(softReference.get(), (T) cellInfo.data));
-
                         }
                     }
-
-
                 });
                 if (ranges != null) {
                     tableData.setUserCellRange(ranges); //设置自定义规则
@@ -347,8 +342,7 @@ public abstract class BaseExcel2Table<T> implements IExcel2Table<T> {
                 loadDataSuc(softReference.get());
                 smartTable.getMatrixHelper().reset();
                 ((SmartTable<K>) smartTable).setTableData(tableData);
-
-
+                excelCallback.getSheelContentSuc();
             }
         }
     }

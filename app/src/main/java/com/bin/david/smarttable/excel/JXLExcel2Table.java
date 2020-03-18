@@ -39,101 +39,97 @@ import jxl.format.RGB;
 /**
  * Created by huang on 2018/1/23.
  */
-
 public class JXLExcel2Table extends BaseExcel2Table<Cell> {
 
     private Set<ImagePoint> imgPointSet;
     //使用缓存
-    private LruCache<ImagePoint,Bitmap> cache;
+    private LruCache<ImagePoint, Bitmap> cache;
 
     @Override
     public void initTableConfig(Context context, final SmartTable<Cell> table) {
         super.initTableConfig(context, table);
         table.getProvider().setDrawOver(new IDrawOver() {
             @Override
-            public void draw(Canvas canvas,Rect scaleRect, Rect showRect, TableConfig config) {
-                if(imgPointSet.size() >0){
-                    for(ImagePoint point :imgPointSet){
-                       /* if(table.getProvider().getGridDrawer().maybeContain(point.row,point.col)) {*/
-                            Bitmap bitmap = cache.get(point);
-                            int[] location = table.getProvider().getPointLocation(point.row,point.col);
-                            int[] size = table.getProvider().getPointSize((int)Math.ceil(point.row),(int)Math.ceil(point.col));
-                            int width = (int) (size[0]*point.width);
-                            int height = (int)(size[1]*point.height);
-                            Rect imgBitmap = new Rect(location[0],location[1],location[0]+width,location[1]+height);
-                            DrawHelper.drawBitmap(canvas,imgBitmap,bitmap,config);
+            public void draw(Canvas canvas, Rect scaleRect, Rect showRect, TableConfig config) {
+                if (imgPointSet.size() > 0) {
+                    for (ImagePoint point : imgPointSet) {
+                        /* if(table.getProvider().getGridDrawer().maybeContain(point.row,point.col)) {*/
+                        Bitmap bitmap = cache.get(point);
+                        int[] location = table.getProvider().getPointLocation(point.row, point.col);
+                        int[] size = table.getProvider().getPointSize((int) Math.ceil(point.row), (int) Math.ceil(point.col));
+                        int width = (int) (size[0] * point.width);
+                        int height = (int) (size[1] * point.height);
+                        Rect imgBitmap = new Rect(location[0], location[1], location[0] + width, location[1] + height);
+                        DrawHelper.drawBitmap(canvas, imgBitmap, bitmap, config);
                         /*}*/
                     }
                 }
             }
         });
-        int maxMemory = (int)(Runtime.getRuntime().maxMemory() / 1024);// kB
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);// kB
         int cacheSize = maxMemory / 16;
         imgPointSet = new HashSet<>();
-        cache = new LruCache<ImagePoint,Bitmap>(cacheSize){
+        cache = new LruCache<ImagePoint, Bitmap>(cacheSize) {
             @Override
-            protected int sizeOf(ImagePoint key,Bitmap bitmap){
+            protected int sizeOf(ImagePoint key, Bitmap bitmap) {
                 return bitmap.getRowBytes() * bitmap.getHeight() / 1024;// KB
             }
         };
     }
 
-
-
     @Override
-    public List<String> getSheetName(Context context,String fileName)throws Exception {
-
-            List<String> list = new ArrayList<>();
-            Workbook workbook = Workbook.getWorkbook(getInputStream(context,fileName));
-            int sheetNum = workbook.getNumberOfSheets();
-            for (int i = 0; i < sheetNum; i++) {
-                Sheet sheet = workbook.getSheet(i);
-                list.add(sheet.getName());
-            }
-            workbook.close();
-            return list;
+    public List<String> getSheetName(Context context, String fileName) throws Exception {
+        List<String> list = new ArrayList<>();
+        Workbook workbook = Workbook.getWorkbook(getInputStream(context, fileName));
+        int sheetNum = workbook.getNumberOfSheets();
+        for (int i = 0; i < sheetNum; i++) {
+            Sheet sheet = workbook.getSheet(i);
+            list.add(sheet.getName());
+        }
+        workbook.close();
+        return list;
     }
 
     @Override
-    protected Cell[][] readExcelCell(Context context,String fileName, int position)throws Exception {
+    protected Cell[][] readExcelCell(Context context, String fileName, int position) throws Exception {
         //这里可以优化
         cache.evictAll();
         imgPointSet.clear();
         int maxRow, maxColumn;
 
-        Workbook workbook = Workbook.getWorkbook(getInputStream(context,fileName));
+        Workbook workbook = Workbook.getWorkbook(getInputStream(context, fileName));
         Sheet sheet = workbook.getSheet(position);
         Range[] ranges = sheet.getMergedCells();
-        if(ranges !=null) {
-            for (int i = 0;i < ranges.length;i++) {
-                Range range =ranges[i];
+        if (ranges != null) {
+            for (int i = 0; i < ranges.length; i++) {
+                Range range = ranges[i];
                 CellRange cellRange = new CellRange(range.getTopLeft().getRow(),
                         range.getBottomRight().getRow(),
-                        range.getTopLeft().getColumn(),range.getBottomRight().getColumn());
+                        range.getTopLeft().getColumn(), range.getBottomRight().getColumn());
                 getRanges().add(cellRange);
             }
         }
         maxRow = sheet.getRows();
-        maxColumn =  sheet.getColumns();
+        maxColumn = sheet.getColumns();
         int imageCount = sheet.getNumberOfImages();//获得第一个sheet中的图片数目
-        for(int i = 0;i < imageCount;i++) {
+        for (int i = 0; i < imageCount; i++) {
             Image img = sheet.getDrawing(i);//取第一个sheet中的第i个图片（插入时间上的第i个）
             byte[] bytes = img.getImageData();//从图片中取出数据
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            ImagePoint point = new ImagePoint(img.getColumn()-1,img.getRow()-1);//jxl从1开始
-            point.height =  img.getHeight();
-            point.width =img.getWidth();
-            cache.put(point,bitmap);
+            ImagePoint point = new ImagePoint(img.getColumn() - 1, img.getRow() - 1);//jxl从1开始
+            point.height = img.getHeight();
+            point.width = img.getWidth();
+            cache.put(point, bitmap);
             imgPointSet.add(point);
         }
         Cell[][] data = new Cell[maxRow][];
         for (int i = 0; i < maxRow; i++) {
             Cell[] rows = new Cell[maxColumn];
-            for(int j = 0;j < maxColumn;j++){
+            for (int j = 0; j < maxColumn; j++) {
                 Cell cell = sheet.getCell(j, i);
-                if(cell !=null){
+                if (cell != null) {
                     rows[j] = cell;
-                }else{
+                } else {
                     rows[j] = null;
                 }
             }
@@ -141,11 +137,11 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
         }
         workbook.close();
         //将行二维数组转换成列的二维数组
-        return  ArrayTableData.transformColumnArray(data);
+        return ArrayTableData.transformColumnArray(data);
     }
 
     @Override
-    protected int getFontSize(Context context,Cell cell) {
+    protected int getFontSize(Context context, Cell cell) {
         CellFormat cellFormat = cell.getCellFormat();
         if (cellFormat != null) {
             Font font = cellFormat.getFont();
@@ -155,10 +151,10 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
     }
 
     @Override
-    protected int getTextColor(Context context,Cell cell) {
+    protected int getTextColor(Context context, Cell cell) {
         CellFormat cellFormat = cell.getCellFormat();
-        if(cellFormat !=null) {
-              Font font = cellFormat.getFont();
+        if (cellFormat != null) {
+            Font font = cellFormat.getFont();
             Colour colour = font.getColour();
             RGB rgb = colour.getDefaultRGB();
             return Color.rgb(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
@@ -168,9 +164,9 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
 
     @Override
     protected int getBackgroundColor(Context context, Cell cell) {
-        if(cell !=null) {
+        if (cell != null) {
             CellFormat cellFormat = cell.getCellFormat();
-            if(cellFormat !=null) {
+            if (cellFormat != null) {
                 Colour colour = cellFormat.getBackgroundColour();
                 RGB rgb = colour.getDefaultRGB();
                 return Color.rgb(rgb.getRed(), rgb.getGreen(), rgb.getBlue());
@@ -187,7 +183,7 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
     @Override
     protected Paint.Align getAlign(Cell cell) {
         CellFormat cellFormat = cell.getCellFormat();
-        if(cellFormat !=null) {
+        if (cellFormat != null) {
             Alignment alignment = cellFormat.getAlignment();
             return alignment == Alignment.LEFT ? Paint.Align.LEFT :
                     alignment == Alignment.RIGHT ? Paint.Align.RIGHT
@@ -198,9 +194,9 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
 
     @Override
     protected boolean hasComment(Cell cell) {
-        if(cell !=null && cell.getCellFeatures()!=null){
+        if (cell != null && cell.getCellFeatures() != null) {
             String comment = cell.getCellFeatures().getComment();
-            if(comment !=null && comment.length()>0){
+            if (comment != null && comment.length() > 0) {
                 return true;
             }
         }
@@ -209,7 +205,6 @@ public class JXLExcel2Table extends BaseExcel2Table<Cell> {
 
     @Override
     protected String getComment(Cell cell) {
-
         return cell.getCellFeatures().getComment();
     }
 

@@ -29,43 +29,37 @@ public class SelectionOperation implements MatrixHelper.OnInterceptListener {
     private int selectColumn = INVALID;
     private boolean isShow;
 
-    void reset(){
+    void reset() {
         isShow = false;
     }
 
-    SelectionOperation() {
+    public SelectionOperation() {
         this.selectionRect = new Rect();
     }
 
-    void setSelectionRect(int selectColumn,int selectRow, Rect rect){
+    public void setSelectionRect(int selectColumn, int selectRow, Rect rect) {
         this.selectRow = selectRow;
         this.selectColumn = selectColumn;
         selectionRect.set(rect);
         isShow = true;
     }
 
-    boolean isSelectedPoint( int selectColumn,int selectRow){
-
-       return  selectRow == this.selectRow  && selectColumn == this.selectColumn;
+    public boolean isSelectedPoint(int selectColumn, int selectRow) {
+        return selectRow == this.selectRow && selectColumn == this.selectColumn;
     }
 
-    void checkSelectedPoint(int selectColumn,int selectRow, Rect rect){
+    public void checkSelectedPoint(int selectColumn, int selectRow, Rect rect) {
+        if (isSelectedPoint(selectColumn, selectRow)) {
 
-         if(isSelectedPoint(selectColumn,selectRow)){
-
-             selectionRect.set(rect);
-             isShow = true;
-         }
+            selectionRect.set(rect);
+            isShow = true;
+        }
     }
 
+    public void draw(Canvas canvas, Rect showRect, TableConfig config) {
 
-
-
-
-    public void draw(Canvas canvas, Rect showRect, TableConfig config){
-
-        if(selectFormat !=null && isShow){
-          selectFormat.draw(canvas,selectionRect,showRect,config);
+        if (selectFormat != null && isShow) {
+            selectFormat.draw(canvas, selectionRect, showRect, config);
         }
     }
 
@@ -73,7 +67,7 @@ public class SelectionOperation implements MatrixHelper.OnInterceptListener {
         return selectFormat;
     }
 
-    void setSelectFormat(ISelectFormat selectFormat) {
+    public void setSelectFormat(ISelectFormat selectFormat) {
         this.selectFormat = selectFormat;
     }
 
@@ -81,6 +75,4 @@ public class SelectionOperation implements MatrixHelper.OnInterceptListener {
     public boolean isIntercept(MotionEvent e1, float distanceX, float distanceY) {
         return false;
     }
-
-
 }

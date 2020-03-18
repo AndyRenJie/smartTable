@@ -36,7 +36,7 @@ public interface IExcel2Table<T> {
      * @param context
      * @param position
      */
-    void loadSheetContent(Context context, int position);
+    void loadSheetContent(Context context, int position, ExcelCallback excelCallback);
 
     /**
      * 清理数据

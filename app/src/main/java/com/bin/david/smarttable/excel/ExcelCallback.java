@@ -9,5 +9,5 @@ public interface ExcelCallback {
 
     void getSheetListSuc(List<String> sheetNames);
 
-
+    void getSheelContentSuc();
 }
